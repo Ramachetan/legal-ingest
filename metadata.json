@@ -1,5 +1,0 @@
-{
-  "name": "Legal Document Ingestion Pipeline UI",
-  "description": "A user interface to simulate and visualize a production-ready ingestion pipeline for legal documents. This application demonstrates the process of loading various document formats, extracting and cleaning text, chunking, generating vector embeddings, and storing them in a vector database.",
-  "requestFramePermissions": []
-}
