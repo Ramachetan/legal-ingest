@@ -8,12 +8,12 @@ if (!API_KEY) {
   // In a real app, you might want to show this error in the UI.
 }
 
-const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
+const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
 const model = 'gemini-2.5-flash';
 
 export const generateLegalText = async (fileName: string): Promise<string> => {
-    if (!API_KEY || !ai) {
+    if (!API_KEY) {
         return Promise.resolve(`This is placeholder text for ${fileName} because the API key is not configured. This Agreement is made and entered into as of the Effective Date by and between the parties. WHEREAS, the Client wishes to engage the Service Provider to perform certain services; and WHEREAS, the Service Provider has the skills, qualifications, and expertise to perform such services. NOW, THEREFORE, in consideration of the mutual covenants and promises herein contained, the parties agree as follows: 1. Services. The Service Provider agrees to perform the services described in Exhibit A attached hereto (the “Services”). The manner and means by which the Service Provider chooses to complete the Services are in the Service Provider’s sole discretion and control. 2. Term. This Agreement shall commence on the Effective Date and shall continue until the satisfactory completion of the Services, unless earlier terminated as provided in this Agreement.`);
     }
 

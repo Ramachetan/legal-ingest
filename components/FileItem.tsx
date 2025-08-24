@@ -17,24 +17,22 @@ interface FileItemProps {
 }
 
 const getFileIcon = (fileName: string) => {
-  const iconStyle = {width: '24px', height: '24px'};
-  if (fileName.endsWith('.pdf')) return <FileCodeIcon style={{...iconStyle, color: '#f87171'}} />;
-  if (fileName.endsWith('.docx')) return <FileTextIcon style={{...iconStyle, color: '#60a5fa'}} />;
-  if (fileName.endsWith('.txt')) return <FileTextIcon style={{...iconStyle, color: '#9ca3af'}} />;
-  return <FileTextIcon style={{...iconStyle, color: '#9ca3af'}} />;
+  if (fileName.endsWith('.pdf')) return <FileCodeIcon className="w-6 h-6 text-red-400" />;
+  if (fileName.endsWith('.docx')) return <FileTextIcon className="w-6 h-6 text-blue-400" />;
+  if (fileName.endsWith('.txt')) return <FileTextIcon className="w-6 h-6 text-gray-400" />;
+  return <FileTextIcon className="w-6 h-6 text-gray-400" />;
 };
 
 const getStatusIcon = (status: ProcessedFile['status']) => {
-  const iconStyle = {width: '20px', height: '20px'};
   switch (status) {
     case 'completed':
-      return <CheckCircleIcon style={{...iconStyle, color: '#10b981'}} />;
+      return <CheckCircleIcon className="w-5 h-5 text-green-400" />;
     case 'failed':
-      return <XCircleIcon style={{...iconStyle, color: '#ef4444'}} />;
+      return <XCircleIcon className="w-5 h-5 text-red-400" />;
     case 'in-progress':
-      return <LoaderIcon style={{...iconStyle, color: '#3b82f6'}} className="animate-spin" />;
+      return <LoaderIcon className="w-5 h-5 text-blue-400 animate-spin" />;
     case 'pending':
-      return <ClockIcon style={{...iconStyle, color: '#f59e0b'}} />;
+      return <ClockIcon className="w-5 h-5 text-yellow-400" />;
     default:
       return null;
   }
@@ -48,53 +46,23 @@ export const FileItem: React.FC<FileItemProps> = ({ file, onSelect, isSelected }
   return (
     <button
       onClick={onSelect}
-      style={{
-        width: '100%',
-        textAlign: 'left',
-        padding: '16px',
-        borderRadius: '12px',
-        transition: 'all 0.2s ease',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        border: 'none',
-        cursor: 'pointer',
-        background: isSelected ? 
-          'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)' : 
-          'rgba(51, 65, 85, 0.6)',
-        color: '#f1f5f9',
-      }}
-      onMouseEnter={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.background = 'rgba(51, 65, 85, 0.8)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.background = 'rgba(51, 65, 85, 0.6)';
-        }
-      }}
+      className={`w-full text-left p-3 rounded-lg transition-colors duration-200 flex items-center space-x-4 ${
+        isSelected ? 'bg-indigo-900/50' : 'bg-gray-700/50 hover:bg-gray-700'
+      }`}
     >
-      <div style={{flexShrink: 0}}>{getFileIcon(file.file.name)}</div>
-      <div style={{flexGrow: 1, minWidth: 0}}>
-        <p style={{
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#f1f5f9',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>
-          {file.file.name}
-        </p>
-        <div className="progress-bar">
+      <div className="flex-shrink-0">{getFileIcon(file.file.name)}</div>
+      <div className="flex-grow min-w-0">
+        <p className="text-sm font-medium text-gray-200 truncate">{file.file.name}</p>
+        <div className="w-full bg-gray-600 rounded-full h-1.5 mt-1.5">
           <div
-            className={file.status === 'completed' ? 'progress-completed' : 'progress-active'}
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              file.status === 'completed' ? 'bg-green-500' : 'bg-indigo-500'
+            }`}
             style={{ width: `${progress}%` }}
           ></div>
         </div>
       </div>
-      <div style={{flexShrink: 0}}>{getStatusIcon(file.status)}</div>
+      <div className="flex-shrink-0">{getStatusIcon(file.status)}</div>
     </button>
   );
 };

@@ -11,111 +11,45 @@ import {
 } from './Icons';
 
 const StatusIcon: React.FC<{ status: ProcessingStep['status'] }> = ({ status }) => {
-  const iconStyle = {width: '20px', height: '20px'};
   switch (status) {
     case 'completed':
-      return <CheckCircleIcon style={{...iconStyle, color: '#10b981'}} />;
+      return <CheckCircleIcon className="w-5 h-5 text-green-400" />;
     case 'failed':
-      return <XCircleIcon style={{...iconStyle, color: '#ef4444'}} />;
+      return <XCircleIcon className="w-5 h-5 text-red-400" />;
     case 'in-progress':
-      return <LoaderIcon style={{...iconStyle, color: '#3b82f6'}} className="animate-spin" />;
+      return <LoaderIcon className="w-5 h-5 text-blue-400 animate-spin" />;
     case 'pending':
     default:
-      return <ClockIcon style={{...iconStyle, color: '#f59e0b'}} />;
+      return <ClockIcon className="w-5 h-5 text-yellow-400" />;
   }
 };
 
 const PipelineStep: React.FC<{ step: ProcessingStep }> = ({ step }) => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    background: 'rgba(51, 65, 85, 0.6)',
-    padding: '16px',
-    borderRadius: '12px',
-    border: '1px solid rgba(148, 163, 184, 0.1)',
-    transition: 'all 0.2s ease'
-  }}>
+  <div className="flex items-center space-x-3 bg-gray-700/50 p-3 rounded-lg">
     <StatusIcon status={step.status} />
-    <div style={{flexGrow: 1}}>
-      <p style={{fontWeight: '500', color: '#f1f5f9', marginBottom: '4px'}}>{step.name}</p>
-      {step.details && <p style={{fontSize: '12px', color: '#94a3b8'}}>{step.details}</p>}
+    <div className="flex-grow">
+      <p className="font-medium text-gray-200">{step.name}</p>
+      {step.details && <p className="text-xs text-gray-400">{step.details}</p>}
     </div>
   </div>
 );
 
 const ChunkItem: React.FC<{ chunk: DocumentChunk }> = ({ chunk }) => (
-  <div style={{
-    background: 'rgba(51, 65, 85, 0.6)',
-    padding: '16px',
-    borderRadius: '12px',
-    border: '1px solid rgba(148, 163, 184, 0.1)',
-    transition: 'all 0.2s ease'
-  }}>
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '12px'
-    }}>
-      <p style={{
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: '#6366f1',
-        fontWeight: '600'
-      }}>
-        Chunk #{chunk.chunkIndex}
-      </p>
-      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '12px',
-          color: '#94a3b8'
-        }} title="Embedding Status">
-          <CpuChipIcon style={{
-            width: '16px',
-            height: '16px',
-            color: chunk.embeddingStatus === 'completed' ? '#10b981' : '#6b7280'
-          }} />
-          <span>Embedding</span>
+  <div className="bg-gray-700/50 p-3 rounded-lg">
+    <div className="flex justify-between items-center mb-2">
+      <p className="font-mono text-sm text-indigo-400">Chunk #{chunk.chunkIndex}</p>
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-1.5 text-xs text-gray-400" title="Embedding Status">
+            <CpuChipIcon className={`w-4 h-4 ${chunk.embeddingStatus === 'completed' ? 'text-green-400' : 'text-gray-500'}`} />
+            <span>Embedding</span>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '12px',
-          color: '#94a3b8'
-        }} title="Storage Status">
-          <DatabaseIcon style={{
-            width: '16px',
-            height: '16px',
-            color: chunk.storageStatus === 'completed' ? '#10b981' : '#6b7280'
-          }} />
-          <span>Qdrant</span>
+        <div className="flex items-center space-x-1.5 text-xs text-gray-400" title="Storage Status">
+            <DatabaseIcon className={`w-4 h-4 ${chunk.storageStatus === 'completed' ? 'text-green-400' : 'text-gray-500'}`} />
+            <span>Qdrant</span>
         </div>
       </div>
     </div>
-    <p style={{
-      fontSize: '14px',
-      color: '#cbd5e1',
-      lineHeight: '1.4',
-      overflow: 'hidden',
-      display: '-webkit-box',
-      WebkitLineClamp: 3,
-      WebkitBoxOrient: 'vertical',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease'
-    }}
-    onClick={(e) => {
-      const element = e.currentTarget;
-      if (element.style.WebkitLineClamp === '3') {
-        element.style.WebkitLineClamp = 'none';
-      } else {
-        element.style.WebkitLineClamp = '3';
-      }
-    }}>
+    <p className="text-sm text-gray-300 line-clamp-3 hover:line-clamp-none transition-all">
       {chunk.text}
     </p>
   </div>
@@ -125,93 +59,37 @@ const ChunkItem: React.FC<{ chunk: DocumentChunk }> = ({ chunk }) => (
 export const ProcessingDetailView: React.FC<{ file: ProcessedFile | null }> = ({ file }) => {
   if (!file) {
     return (
-      <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        color: '#6b7280'
-      }}>
-        <DatabaseIcon style={{width: '64px', height: '64px', marginBottom: '16px'}} />
-        <p style={{fontSize: '18px', marginBottom: '8px'}}>Select a file to view its processing details</p>
+      <div className="h-full flex flex-col items-center justify-center text-center text-gray-500">
+        <DatabaseIcon className="w-16 h-16 mb-4" />
+        <p className="text-lg">Select a file to view its processing details</p>
         <p>Or click "Process Files" to start the ingestion.</p>
       </div>
     );
   }
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '24px',
-      overflow: 'hidden'
-    }}>
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
       <div>
-        <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          marginBottom: '8px',
-          color: '#6366f1'
-        }}>Processing Status for:</h3>
-        <p style={{
-          fontSize: '18px',
-          fontWeight: '700',
-          color: '#f1f5f9',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>{file.file.name}</p>
+        <h3 className="text-base font-semibold mb-2 text-indigo-400">Processing Status for:</h3>
+        <p className="text-lg font-bold text-gray-100 truncate">{file.file.name}</p>
       </div>
       
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '12px'
-      }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {file.steps.map((step, index) => (
           <PipelineStep key={index} step={step} />
         ))}
       </div>
 
-      <div style={{
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0
-      }}>
-        <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          marginBottom: '12px',
-          color: '#6366f1'
-        }}>Indexed Chunks in Qdrant ({file.chunks.length})</h3>
+      <div className="flex-grow flex flex-col min-h-0">
+        <h3 className="text-base font-semibold mb-3 text-indigo-400">Indexed Chunks in Qdrant ({file.chunks.length})</h3>
         {file.chunks.length > 0 ? (
-          <div style={{
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            paddingRight: '8px',
-            flexGrow: 1
-          }}>
+          <div className="overflow-y-auto space-y-3 pr-2 flex-grow">
             {file.chunks.map(chunk => (
               <ChunkItem key={chunk.id} chunk={chunk} />
             ))}
           </div>
         ) : (
-          <div style={{
-            flexGrow: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280',
-            background: 'rgba(17, 24, 39, 0.5)',
-            borderRadius: '12px',
-            padding: '32px'
-          }}>
+          <div className="flex-grow flex items-center justify-center text-gray-500 bg-gray-900/50 rounded-lg">
             <p>Chunks will appear here once the 'Chunk Text' step is complete.</p>
           </div>
         )}
