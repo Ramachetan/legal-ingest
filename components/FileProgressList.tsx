@@ -11,24 +11,23 @@ interface FileProgressListProps {
 
 export const FileProgressList: React.FC<FileProgressListProps> = ({ files, onFileSelect, selectedFileId }) => {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col" style={{height: '100%'}}>
       {files.length === 0 ? (
         <div className="flex-grow flex items-center justify-center text-gray-500">
           <p>Upload documents to begin.</p>
         </div>
       ) : (
-        <div className="overflow-y-auto pr-2 flex-grow">
-          <ul className="space-y-3">
+        <div style={{overflowY: 'auto', paddingRight: '8px', height: '100%'}}>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
             {files.map(file => (
-              <li key={file.id}>
-                <FileItem
-                  file={file}
-                  onSelect={() => onFileSelect(file)}
-                  isSelected={selectedFileId === file.id}
-                />
-              </li>
+              <FileItem
+                key={file.id}
+                file={file}
+                onSelect={() => onFileSelect(file)}
+                isSelected={selectedFileId === file.id}
+              />
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
