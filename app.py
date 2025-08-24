@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 # Add src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
+
 try:
     from src.pipeline import IngestionPipeline
     from src.config import Config
@@ -17,14 +18,6 @@ except ImportError as e:
     st.error(f"Import error: {e}")
     st.error("Please ensure all dependencies are installed and the src directory is properly configured.")
     st.stop()
-
-# Page configuration
-st.set_page_config(
-    page_title="Legal Document Ingestion Pipeline",
-    page_icon="⚖️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # Custom CSS
 st.markdown("""
@@ -338,8 +331,8 @@ def main():
             st.stop()
     
     # Main tabs
-    tab1, tab2, tab3 = st.tabs(["📤 Upload & Process", "💾 Vector Store", "⚙️ Configuration"])
-    
+    tab1, tab2, tab3, tab4 = st.tabs(["📤 Upload & Process", "💾 Vector Store", "⚙️ Configuration", "🔍 Search"])
+
     with tab1:
         st.markdown("""
         <div class="status-box info-box">
@@ -350,23 +343,58 @@ def main():
             <p>4. Documents will be stored in the vector database for RAG applications</p>
         </div>
         """, unsafe_allow_html=True)
-        
         # File upload and processing
         uploaded_files = display_file_uploader()
-        
         if uploaded_files:
             process_documents(uploaded_files)
-        
         # Show last results if available
         if st.session_state.last_results:
             st.markdown("---")
             display_processing_results(st.session_state.last_results)
-    
+
     with tab2:
         display_vector_store_status()
-    
+
     with tab3:
         display_configuration()
+
+    with tab4:
+        st.subheader("🔍 Search for Related Chunks")
+        st.markdown("Enter a search query to retrieve related document chunks using the same embedding model.")
+
+        # Search bar
+        search_query = st.text_input("Search Query", "", help="Type your question or keywords here")
+        top_k = st.slider("Number of results", min_value=1, max_value=20, value=5)
+
+        if st.button("🔎 Search", type="primary"):
+            if not search_query.strip():
+                st.warning("Please enter a search query.")
+            else:
+                with st.spinner("Generating embedding and searching..."):
+                    try:
+                        from src.embedding_generator import GeminiEmbeddingGenerator
+                        from src.vector_store import FAISSVectorStore
+
+                        embedder = GeminiEmbeddingGenerator()
+                        vector_store = FAISSVectorStore()
+
+                        query_embedding = embedder._get_single_embedding(search_query)
+                        if query_embedding is None:
+                            st.error("Failed to generate embedding for the search query.")
+                        else:
+                            results = vector_store.search(query_embedding, k=top_k)
+                            if not results:
+                                st.info("No related chunks found.")
+                            else:
+                                st.success(f"Found {len(results)} related chunks:")
+                                for result in results:
+                                    with st.expander(f"Rank {result['rank']} | Score: {result['similarity_score']:.4f}"):
+                                        st.write(f"**Source Document:** {result.get('source_document', 'N/A')}")
+                                        st.write(f"**File Type:** {result.get('file_type', 'N/A')}")
+                                        st.write(f"**Chunk Text:**\n{result.get('text', '')}")
+                                        st.write(f"**Characters:** {result.get('char_count', 0)}")
+                    except Exception as e:
+                        st.error(f"Search failed: {str(e)}")
     
     # Footer
     st.markdown("---")
