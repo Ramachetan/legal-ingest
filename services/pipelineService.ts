@@ -1,8 +1,11 @@
-import type { ProcessedFile, ProcessingStep, DocumentChunk } from '../types';
+
+import { QdrantClient } from '@qdrant/js-client-rest';
+import type { ProcessedFile, DocumentChunk } from '../types';
 import { generateLegalText } from './geminiService';
 
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
+const VECTOR_DIMENSION = 768; // A common dimension for sentence-transformer models
 
 // Helper to simulate async operations and update state
 const simulateProcessing = (duration: number) => new Promise(resolve => setTimeout(resolve, duration));
@@ -23,7 +26,8 @@ export const processFile = async (
   fileToProcess: ProcessedFile,
   onUpdate: (file: ProcessedFile) => void,
   qdrantUrl: string,
-  qdrantApiKey: string
+  qdrantApiKey: string,
+  collectionName: string
 ): Promise<void> => {
   let currentFileState: ProcessedFile = { ...fileToProcess, status: 'in-progress' };
 
@@ -78,34 +82,85 @@ export const processFile = async (
     currentFileState = updateStepStatus(currentFileState, 'Chunk Text', 'completed', `${chunks.length} chunks created.`);
     onUpdate(currentFileState);
 
-    // 4. Generate Embeddings
+    // 4. Generate Embeddings (Simulated with random vectors)
     currentFileState = updateStepStatus(currentFileState, 'Generate Embeddings', 'in-progress');
     onUpdate(currentFileState);
     for (let j = 0; j < currentFileState.chunks.length; j++) {
-      await simulateProcessing(150); // Simulate API call per chunk
+      await simulateProcessing(50); // Simulate API call per chunk
+      const fakeEmbedding = Array.from({ length: VECTOR_DIMENSION }, () => Math.random() * 2 - 1);
+      currentFileState.chunks[j].embedding = fakeEmbedding;
       currentFileState.chunks[j].embeddingStatus = 'completed';
       onUpdate({ ...currentFileState });
     }
-    currentFileState = updateStepStatus(currentFileState, 'Generate Embeddings', 'completed', `Embeddings created for ${chunks.length} chunks.`);
+    currentFileState = updateStepStatus(currentFileState, 'Generate Embeddings', 'completed', `Embeddings created for ${currentFileState.chunks.length} chunks.`);
     onUpdate(currentFileState);
 
     // 5. Store in Qdrant
     currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'in-progress');
     onUpdate(currentFileState);
-    if (!qdrantUrl || !qdrantApiKey) {
-      throw new Error("Qdrant URL and API Key must be provided.");
+    if (!qdrantUrl || !qdrantApiKey || !collectionName) {
+      throw new Error("Qdrant URL, API Key, and Collection Name must be provided.");
     }
-    await simulateProcessing(500); // Simulate network latency
+    
+    const client = new QdrantClient({ 
+        url: qdrantUrl, 
+        apiKey: qdrantApiKey,
+        checkCompatibility: false,
+    });
+    
     currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'in-progress', 'Connecting to Qdrant cluster...');
     onUpdate(currentFileState);
-    await simulateProcessing(1000); // Simulate connection handshake
 
-    for (let j = 0; j < currentFileState.chunks.length; j++) {
-      await simulateProcessing(50); // Simulate DB insertion per chunk
-      currentFileState.chunks[j].storageStatus = 'completed';
-      onUpdate({ ...currentFileState });
+    // Check if collection exists, create if not
+    const collectionsResult = await client.getCollections();
+    const collectionExists = collectionsResult.collections.some(c => c.name === collectionName);
+    
+    if (!collectionExists) {
+        currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'in-progress', `Collection '${collectionName}' not found. Creating...`);
+        onUpdate(currentFileState);
+        await client.createCollection(collectionName, {
+            vectors: { size: VECTOR_DIMENSION, distance: 'Cosine' },
+        });
+        await simulateProcessing(1000); // Give Qdrant a moment to initialize the collection
     }
-    currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'completed', `${chunks.length} vectors stored.`);
+
+    currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'in-progress', `Upserting ${currentFileState.chunks.length} vectors...`);
+    onUpdate(currentFileState);
+    
+    const points = currentFileState.chunks.map(chunk => {
+        if (!chunk.embedding) {
+            throw new Error(`Chunk ${chunk.id} is missing an embedding.`);
+        }
+        return {
+            id: chunk.id,
+            vector: chunk.embedding,
+            payload: {
+                text: chunk.text,
+                ...chunk.metadata
+            }
+        };
+    });
+
+    // Upsert in batches
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < points.length; i += BATCH_SIZE) {
+        const batch = points.slice(i, i + BATCH_SIZE);
+        await client.upsert(collectionName, {
+            wait: true,
+            points: batch,
+        });
+
+        // Update progress for chunks in UI after each batch
+        for (let j = 0; j < batch.length; j++) {
+            const chunkIndex = i + j;
+            if(currentFileState.chunks[chunkIndex]) {
+                currentFileState.chunks[chunkIndex].storageStatus = 'completed';
+            }
+        }
+        onUpdate({ ...currentFileState });
+    }
+
+    currentFileState = updateStepStatus(currentFileState, 'Store in Qdrant', 'completed', `${currentFileState.chunks.length} vectors stored in '${collectionName}'.`);
     onUpdate(currentFileState);
 
     // Finalize

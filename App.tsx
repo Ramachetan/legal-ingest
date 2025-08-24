@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [qdrantUrl, setQdrantUrl] = useState<string>('');
   const [qdrantApiKey, setQdrantApiKey] = useState<string>('');
+  const [qdrantCollectionName, setQdrantCollectionName] = useState<string>('legal_documents');
 
   const handleFileSelect = (file: ProcessedFile) => {
     setSelectedFile(file);
@@ -50,11 +51,11 @@ const App: React.FC = () => {
             if (selectedFile?.id === updatedFile.id || !selectedFile) {
                 setSelectedFile(updatedFile);
             }
-        }, qdrantUrl, qdrantApiKey);
+        }, qdrantUrl, qdrantApiKey, qdrantCollectionName);
     }
     
     setIsProcessing(false);
-  }, [files, isProcessing, selectedFile, qdrantUrl, qdrantApiKey]);
+  }, [files, isProcessing, selectedFile, qdrantUrl, qdrantApiKey, qdrantCollectionName]);
 
 
   const handleClearAll = () => {
@@ -64,7 +65,7 @@ const App: React.FC = () => {
   };
   
   const pendingFileCount = files.filter(f => f.status === 'pending').length;
-  const canProcess = !isProcessing && pendingFileCount > 0 && !!qdrantUrl && !!qdrantApiKey;
+  const canProcess = !isProcessing && pendingFileCount > 0 && !!qdrantUrl && !!qdrantApiKey && !!qdrantCollectionName;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
@@ -128,6 +129,17 @@ const App: React.FC = () => {
                   value={qdrantApiKey}
                   onChange={(e) => setQdrantApiKey(e.target.value)}
                   placeholder="******************"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="qdrant-collection" className="block text-sm font-medium text-gray-300 mb-1">Collection Name</label>
+                <input 
+                  type="text" 
+                  id="qdrant-collection"
+                  value={qdrantCollectionName}
+                  onChange={(e) => setQdrantCollectionName(e.target.value)}
+                  placeholder="e.g., legal_documents"
                   className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>

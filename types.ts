@@ -19,6 +19,7 @@ export interface DocumentChunk {
     chunk_size: number;
     chunk_overlap: number;
   };
+  embedding?: number[];
   embeddingStatus: ProcessingStatus;
   storageStatus: ProcessingStatus;
 }
