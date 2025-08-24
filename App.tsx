@@ -67,22 +67,19 @@ const App: React.FC = () => {
   const canProcess = !isProcessing && pendingFileCount > 0 && !!qdrantUrl && !!qdrantApiKey;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 shadow-lg sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white tracking-wider">Legal Document Ingestion Pipeline</h1>
+    <div className="min-h-screen flex flex-col">
+      <header className="header">
+        <div className="container flex justify-between items-center">
+          <h1 className="title">Legal Document Ingestion Pipeline</h1>
           <div className="flex items-center space-x-4">
             <button
               onClick={handleProcessAll}
               disabled={!canProcess}
-              className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 disabled:bg-indigo-800 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors duration-200 flex items-center space-x-2"
+              className="btn btn-primary"
             >
               {isProcessing ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <div className="loading-spinner animate-spin"></div>
                   Processing...
                 </>
               ) : (
@@ -91,7 +88,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={handleClearAll}
-              className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-500 disabled:bg-gray-600 transition-colors duration-200"
+              className="btn btn-danger"
             >
               Clear All
             </button>
@@ -99,53 +96,53 @@ const App: React.FC = () => {
         </div>
       </header>
       
-      <main className="flex-grow container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 flex flex-col gap-6">
-          <div className="bg-gray-800 rounded-lg shadow-xl p-6 h-64">
-            <h2 className="text-lg font-semibold mb-4 flex items-center"><UploadCloudIcon className="w-6 h-6 mr-2" /> 1. Upload Documents</h2>
+      <main className="flex-grow container p-6 grid grid-cols-1 lg-grid-cols-3 gap-6">
+        <div className="flex flex-col space-y-6">
+          <div className="modern-card h-64">
+            <h2 className="section-title"><UploadCloudIcon className="w-6 h-6 mr-2" /> 1. Upload Documents</h2>
             <FileUpload onFilesAdded={handleFilesAdded} />
           </div>
 
-          <div className="bg-gray-800 rounded-lg shadow-xl p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center"><CogIcon className="w-6 h-6 mr-2" /> 2. Configure Database</h2>
+          <div className="modern-card">
+            <h2 className="section-title"><CogIcon className="w-6 h-6 mr-2" /> 2. Configure Database</h2>
             <div className="space-y-4">
-              <div>
-                <label htmlFor="qdrant-url" className="block text-sm font-medium text-gray-300 mb-1">Qdrant Cloud URL</label>
+              <div className="form-group">
+                <label htmlFor="qdrant-url" className="label">Qdrant Cloud URL</label>
                 <input 
                   type="text" 
                   id="qdrant-url"
                   value={qdrantUrl}
                   onChange={(e) => setQdrantUrl(e.target.value)}
                   placeholder="https://xyz.gcp.cloud.qdrant.io"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="input"
                 />
               </div>
-              <div>
-                <label htmlFor="qdrant-key" className="block text-sm font-medium text-gray-300 mb-1">Qdrant API Key</label>
+              <div className="form-group">
+                <label htmlFor="qdrant-key" className="label">Qdrant API Key</label>
                 <input 
                   type="password"
                   id="qdrant-key"
                   value={qdrantApiKey}
                   onChange={(e) => setQdrantApiKey(e.target.value)}
                   placeholder="******************"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="input"
                 />
               </div>
-              <div className="flex items-start space-x-2 text-xs text-gray-400 pt-2">
+              <div className="info-box">
                 <InfoIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <p>In a production app, these secrets should be managed securely on a backend server, not exposed in the frontend.</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-lg shadow-xl p-6 flex-grow">
-            <h2 className="text-lg font-semibold mb-4">3. Document Queue ({files.length})</h2>
+          <div className="modern-card flex-grow">
+            <h2 className="section-title">3. Document Queue ({files.length})</h2>
             <FileProgressList files={files} onFileSelect={handleFileSelect} selectedFileId={selectedFile?.id} />
           </div>
         </div>
         
-        <div className="lg:col-span-2 bg-gray-800 rounded-lg shadow-xl p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center"><DatabaseIcon className="w-6 h-6 mr-2" /> 4. Processing & Indexing Pipeline</h2>
+        <div className="modern-card">
+          <h2 className="section-title"><DatabaseIcon className="w-6 h-6 mr-2" /> 4. Processing & Indexing Pipeline</h2>
           <ProcessingDetailView file={selectedFile} />
         </div>
       </main>
