@@ -717,14 +717,15 @@ def display_vector_store_status():
                         st.write(f"**Characters:** {doc['total_chars']:,}")
         
         # Clear data option
-        if st.button("🗑️ Clear All Data", type="secondary"):
-            if st.confirm("Are you sure you want to clear all stored documents and embeddings?"):
-                with st.spinner("Clearing data..."):
-                    if st.session_state.pipeline.clear_all_data():
-                        st.success("✅ All data cleared successfully!")
-                        st.rerun()
-                    else:
-                        st.error("❌ Failed to clear data.")
+        st.warning("⚠️ This will permanently delete all stored documents and embeddings.")
+        confirm_clear = st.checkbox("I understand the consequences and want to proceed")
+        if st.button("🗑️ Clear All Data", type="secondary", disabled=not confirm_clear):
+            with st.spinner("Clearing data..."):
+                if st.session_state.pipeline.clear_all_data():
+                    st.success("✅ All data cleared successfully!")
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to clear data.")
         
     except Exception as e:
         st.error(f"Error loading vector store status: {str(e)}")
